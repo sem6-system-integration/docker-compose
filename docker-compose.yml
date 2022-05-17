@@ -1,0 +1,52 @@
+version: "3"
+
+services:
+  db:
+    image: "postgres"
+    container_name: "postgres"
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=transport_api
+    ports:
+      - "5432:5432"
+    networks:
+        - backend
+    volumes:
+      - ./db-data:/var/lib/postgresql/data
+    healthcheck:
+        test: ["CMD-SHELL", "pg_isready -U postgres"]
+        interval: 1s
+        timeout: 5s
+        retries: 5
+
+  backend:
+    build: "./covid-impact-on-transport-api"
+    container_name: "backend"
+    ports:
+      - "8080:8080"
+    networks:
+        - backend
+        - frontend
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/transport_api
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=password
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
+    depends_on:
+        db:
+            condition: service_healthy
+
+  frontend:
+    build: "./covid-impact-on-transport"
+    container_name: "frontend"
+    ports:
+      - "80:80"
+    networks:
+        - frontend
+    depends_on:
+      - backend
+      
+networks:
+    frontend:
+    backend:
