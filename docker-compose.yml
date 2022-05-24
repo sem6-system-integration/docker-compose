@@ -18,7 +18,7 @@ services:
         test: ["CMD-SHELL", "pg_isready -U postgres"]
         interval: 1s
         timeout: 5s
-        retries: 5
+        retries: 30
 
   backend:
     build: "./covid-impact-on-transport-api"
